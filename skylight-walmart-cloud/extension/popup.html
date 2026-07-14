@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skylight to Walmart</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <h1>Skylight → Walmart</h1>
+    <p class="subtle">Import the cart file created by the Streamlit app.</p>
+
+    <label class="file-label" for="cartFile">Cart file</label>
+    <input id="cartFile" type="file" accept="application/json,.json">
+
+    <label for="mode">Run mode</label>
+    <select id="mode">
+      <option value="assisted">Assisted review</option>
+      <option value="auto">Auto-pick cheapest confident match</option>
+    </select>
+
+    <div id="summary" class="summary">No cart file imported.</div>
+    <div id="status" class="status" aria-live="polite"></div>
+
+    <button id="start" class="primary" disabled>Start on Walmart</button>
+    <div class="button-row">
+      <button id="openCart">Open cart</button>
+      <button id="reset">Reset</button>
+    </div>
+
+    <details>
+      <summary>How it works</summary>
+      <p>Assisted mode shows candidate products directly on each Walmart search page. Auto mode only proceeds when the title match is strong.</p>
+      <p>The extension never checks out or submits payment.</p>
+    </details>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

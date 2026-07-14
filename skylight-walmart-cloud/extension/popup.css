@@ -1,0 +1,99 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1f2937;
+  background: #ffffff;
+}
+
+body {
+  margin: 0;
+  width: 360px;
+}
+
+main {
+  padding: 16px;
+}
+
+h1 {
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.subtle {
+  color: #6b7280;
+  margin: 0 0 16px;
+  font-size: 13px;
+}
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 12px 0 6px;
+}
+
+input,
+select,
+button {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input,
+select {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 9px;
+  background: #fff;
+}
+
+button {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+button.primary {
+  margin-top: 12px;
+  background: #0071dc;
+  color: white;
+  border-color: #0071dc;
+}
+
+.button-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.summary,
+.status {
+  margin-top: 12px;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 13px;
+}
+
+.summary {
+  background: #f1f5f9;
+}
+
+.status {
+  min-height: 18px;
+  color: #075985;
+  background: #f0f9ff;
+}
+
+details {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #475569;
+}

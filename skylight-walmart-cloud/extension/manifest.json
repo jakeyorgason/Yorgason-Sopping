@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Skylight to Walmart Cart",
+  "version": "0.1.0",
+  "description": "Review a grocery plan and add selected products to a Walmart cart.",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": [
+    "https://www.walmart.com/*",
+    "https://walmart.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Skylight to Walmart"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.walmart.com/*",
+        "https://walmart.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

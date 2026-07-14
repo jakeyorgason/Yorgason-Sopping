@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "created_at": "2026-07-14T18:56:00+00:00",
+  "source": "Sample Skylight grocery list",
+  "store_note": "Confirm your local pickup store in Walmart",
+  "mode": "assisted",
+  "items": [
+    {
+      "id": "item-1",
+      "name": "diced tomatoes",
+      "quantity": 2,
+      "unit": "can",
+      "notes": "plain, no added seasoning",
+      "search_query": "diced tomatoes 14.5 oz",
+      "packages": 2
+    },
+    {
+      "id": "item-2",
+      "name": "boneless skinless chicken breast",
+      "quantity": 1.5,
+      "unit": "lb",
+      "notes": "fresh",
+      "search_query": "fresh boneless skinless chicken breast",
+      "packages": 1
+    }
+  ]
+}
