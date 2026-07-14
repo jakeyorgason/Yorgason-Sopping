@@ -203,7 +203,7 @@ with review_tab:
         "The extension searches using the `search_query` field."
     )
 
-    if st.session_state[grocery_items_df"].empty:
+    if st.session_state["grocery_items_df"].empty:
         st.info("Import a pasted list or screenshots first.")
     else:
         edited = st.data_editor(
