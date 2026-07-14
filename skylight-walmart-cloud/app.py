@@ -18,6 +18,7 @@ st.set_page_config(page_title="Skylight → Walmart Cart", page_icon="🛒", lay
 
 COLUMNS = ["include", "item", "quantity", "unit", "notes", "search_query", "packages"]
 PROJECT_DIR = Path(__file__).resolve().parent
+ITEMS_KEY = "grocery_items_df_v3"
 
 
 def secret_value(name: str, default: str = "") -> str:
@@ -60,6 +61,26 @@ def empty_frame() -> pd.DataFrame:
     return pd.DataFrame(columns=COLUMNS)
 
 
+
+
+def get_items_frame() -> pd.DataFrame:
+    """Return a valid grocery DataFrame, recreating it if session state was cleared."""
+    value = st.session_state.get(ITEMS_KEY)
+    if not isinstance(value, pd.DataFrame):
+        value = empty_frame()
+        st.session_state[ITEMS_KEY] = value
+    return value
+
+
+def set_items_frame(value: pd.DataFrame) -> None:
+    """Store a normalized grocery DataFrame in session state."""
+    frame = value.copy() if isinstance(value, pd.DataFrame) else empty_frame()
+    for column in COLUMNS:
+        if column not in frame.columns:
+            frame[column] = None
+    st.session_state[ITEMS_KEY] = frame[COLUMNS].reset_index(drop=True)
+
+
 def items_to_frame(items: list[GroceryItem]) -> pd.DataFrame:
     rows = []
     for item in merge_exact_items(items):
@@ -77,10 +98,11 @@ def items_to_frame(items: list[GroceryItem]) -> pd.DataFrame:
 
 def add_items(items: list[GroceryItem]) -> None:
     incoming = items_to_frame(items)
-    if st.session_state.items.empty:
-        st.session_state.items = incoming
+    current = get_items_frame()
+    if current.empty:
+        set_items_frame(incoming)
     else:
-        combined = pd.concat([st.session_state.items, incoming], ignore_index=True)
+        combined = pd.concat([current, incoming], ignore_index=True)
         # Merge only exact item/unit/notes rows and preserve editable fields.
         grouped = []
         grouping_keys = [
@@ -93,13 +115,11 @@ def add_items(items: list[GroceryItem]) -> None:
             first["packages"] = int(pd.to_numeric(group["packages"], errors="coerce").fillna(1).max())
             first["include"] = bool(group["include"].any())
             grouped.append(first)
-        st.session_state.items = pd.DataFrame(grouped, columns=COLUMNS)
+        set_items_frame(pd.DataFrame(grouped, columns=COLUMNS))
 
 
 require_household_access()
-
-if "items" not in st.session_state:
-    st.session_state.items = empty_frame()
+get_items_frame()
 
 st.title("Skylight → Walmart Cart")
 st.caption("Turn a Skylight grocery list into a reviewed cart plan for your regular Walmart account—without Instacart. Cloud sessions are temporary; download the cart before closing the app.")
@@ -108,7 +128,7 @@ with st.sidebar:
     st.subheader("Household defaults")
     preferred_store = st.text_input(
         "Walmart store or ZIP (reference only)",
-        placeholder="e.g. 80920 or North Colorado Springs",
+        value="84005",
         help="The extension uses the store already selected in Walmart. This field is included in the export as a reminder.",
     )
     mode = st.selectbox(
@@ -152,24 +172,24 @@ with input_tab:
             type=["png", "jpg", "jpeg", "webp"],
             accept_multiple_files=True,
         )
-        configured_api_key = secret_value("OPENAI_API_KEY")
+        api_key = secret_value("OPENAI_API_KEY")
         configured_model = secret_value("OPENAI_MODEL", "gpt-5.6")
-        if configured_api_key:
-            st.success("Screenshot extraction is enabled for this deployed app.")
-            api_key = configured_api_key
+        if api_key:
+            st.success("Screenshot extraction is enabled through Streamlit secrets.")
         else:
-            api_key = st.text_input(
-                "OpenAI API key",
-                type="password",
-                help="Used only for this extraction request. It is not written to the cart export.",
-            )
+            st.error("Screenshot extraction is unavailable because OPENAI_API_KEY is missing from Streamlit secrets.")
         model = st.text_input("Vision model", value=configured_model)
         extra_text = st.text_area(
             "Optional notes or pasted list to include with screenshots",
             height=90,
             placeholder="Ignore crossed-out items; 'milk' means whole milk.",
         )
-        if st.button("Extract screenshot list", type="primary", use_container_width=True):
+        if st.button(
+            "Extract screenshot list",
+            type="primary",
+            use_container_width=True,
+            disabled=not bool(api_key),
+        ):
             if not uploads:
                 st.warning("Upload at least one screenshot.")
             else:
@@ -203,11 +223,12 @@ with review_tab:
         "The extension searches using the `search_query` field."
     )
 
-    if st.session_state["grocery_items_df"].empty:
+    current_items = get_items_frame()
+    if current_items.empty:
         st.info("Import a pasted list or screenshots first.")
     else:
         edited = st.data_editor(
-            st.session_state.items,
+            current_items,
             use_container_width=True,
             num_rows="dynamic",
             hide_index=True,
@@ -224,7 +245,7 @@ with review_tab:
             },
             key="item_editor",
         )
-        st.session_state.items = edited
+        set_items_frame(edited)
 
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -241,20 +262,20 @@ with review_tab:
                     ),
                     axis=1,
                 )
-                st.session_state.items = rebuilt
+                set_items_frame(rebuilt)
                 st.rerun()
         with c2:
             if st.button("Remove unchecked rows", use_container_width=True):
-                st.session_state.items = edited[edited["include"]].reset_index(drop=True)
+                set_items_frame(edited[edited["include"]].reset_index(drop=True))
                 st.rerun()
         with c3:
             if st.button("Clear all", use_container_width=True):
-                st.session_state.items = empty_frame()
+                set_items_frame(empty_frame())
                 st.rerun()
 
 with export_tab:
     st.subheader("Create the extension handoff file")
-    included = st.session_state.items
+    included = get_items_frame().copy()
     if not included.empty:
         included = included[included["include"]].copy()
 
